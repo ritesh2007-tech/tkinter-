@@ -20,6 +20,7 @@ from services.serial_service import SerialService
 from services.interest_service import InterestService
 from services.report_service import ReportService
 from ui.components.photo_picker import PhotoPicker
+from ui.components.multi_proof_picker import MultiProofPicker
 from ui.components.autocomplete import CustomerAutocompleteEntry
 from ui.components.connection_tree import ConnectionTreeWidget
 from ui.components.toast import Toast
@@ -88,32 +89,36 @@ class NewEntryView(tk.Frame):
         tk.Label(
             top_card,
             text="➕ NEW MORTGAGE PLEDGE ENTRY",
-            font=("Segoe UI", 15, "bold"),
+            font=("Segoe UI", 18, "bold"),
             bg=THEME["bg_card"],
             fg=THEME["primary_dark"]
-        ).pack(side="left")
+        ).pack(anchor="w")
 
-        # Serial & Date Bar on Right
+        # Keep serial and date controls on separate rows so they remain visible on narrow windows.
         serial_bar = tk.Frame(top_card, bg=THEME["bg_card"])
-        serial_bar.pack(side="right")
+        serial_bar.pack(fill="x", pady=(12, 0))
+        serial_fields = tk.Frame(serial_bar, bg=THEME["bg_card"])
+        serial_fields.pack(anchor="w")
+        date_fields = tk.Frame(serial_bar, bg=THEME["bg_card"])
+        date_fields.pack(anchor="w", pady=(8, 0))
 
         # Serial Series Letter
-        tk.Label(serial_bar, text="Series:", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(10, 4))
-        self.cmb_letter = ttk.Combobox(serial_bar, values=SERIAL_LETTERS, width=4, font=("Segoe UI", 11, "bold"), state="readonly")
+        tk.Label(serial_fields, text="Series:", font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(0, 6))
+        self.cmb_letter = ttk.Combobox(serial_fields, values=SERIAL_LETTERS, width=4, font=("Segoe UI", 12, "bold"), state="readonly")
         self.cmb_letter.set("A")
         self.cmb_letter.pack(side="left")
 
         # Serial Number (NO DEFAULT VALUE)
-        tk.Label(serial_bar, text="Serial No:", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(12, 4))
-        self.ent_serial_no = ttk.Entry(serial_bar, width=8, font=("Segoe UI", 11, "bold"))
+        tk.Label(serial_fields, text="Serial No:", font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(14, 5))
+        self.ent_serial_no = ttk.Entry(serial_fields, width=8, font=("Segoe UI", 12, "bold"))
         self.ent_serial_no.pack(side="left")
         self.ent_serial_no.bind("<KeyRelease>", lambda e: self._on_serial_no_change())
 
         # Generate Next Button
         self.btn_gen_serial = tk.Button(
-            serial_bar,
+            serial_fields,
             text="⚡ Next No",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg="#fef3c7",
             fg=THEME["primary_dark"],
             activebackground="#fde68a",
@@ -127,9 +132,9 @@ class NewEntryView(tk.Frame):
 
         # Book & Entry Indicator
         self.lbl_book_info = tk.Label(
-            serial_bar,
+            serial_fields,
             text="[Book - / Entry -]",
-            font=("Segoe UI", 10, "bold"),
+            font=("Segoe UI", 11, "bold"),
             bg=THEME["primary_light"],
             fg=THEME["primary_dark"],
             padx=8,
@@ -138,14 +143,14 @@ class NewEntryView(tk.Frame):
         self.lbl_book_info.pack(side="left", padx=(0, 15))
 
         # Date Section (NO DEFAULT VALUE)
-        tk.Label(serial_bar, text="Date:", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(0, 4))
-        self.ent_date = ttk.Entry(serial_bar, width=12, font=("Segoe UI", 10))
+        tk.Label(date_fields, text="Pledge Date:", font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(0, 6))
+        self.ent_date = ttk.Entry(date_fields, width=14, font=("Segoe UI", 11))
         self.ent_date.pack(side="left")
 
         self.btn_sys_date = tk.Button(
-            serial_bar,
+            date_fields,
             text="📅 Today",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg="#e2e8f0",
             fg=THEME["text_dark"],
             activebackground="#cbd5e1",
@@ -164,6 +169,7 @@ class NewEntryView(tk.Frame):
         form_grid.pack(fill="x", padx=10, pady=(0, 15))
         form_grid.grid_columnconfigure(0, weight=1, uniform="form_cols")
         form_grid.grid_columnconfigure(1, weight=1, uniform="form_cols")
+        form_grid.bind("<Configure>", self._on_form_resize)
 
         # --- LEFT COLUMN: CUSTOMER DETAILS ---
         cust_card = tk.LabelFrame(
@@ -177,15 +183,16 @@ class NewEntryView(tk.Frame):
             relief="solid",
             borderwidth=1
         )
+        self.customer_card = cust_card
         cust_card.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
 
         # Autocomplete customer name
-        tk.Label(cust_card, text="Customer Full Name * (Type to search registered or enter new)", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
+        tk.Label(cust_card, text="Customer Full Name * (Type to search registered or enter new)", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
         self.cust_autocomplete = CustomerAutocompleteEntry(cust_card, on_select_callback=self._on_customer_autofill)
         self.cust_autocomplete.pack(fill="x", pady=(3, 10))
 
         # Father / Husband / Guardian (NO DEFAULT)
-        tk.Label(cust_card, text="Father / Husband / Guardian Name", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
+        tk.Label(cust_card, text="Father / Husband / Guardian Name", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
         self.ent_cust_guardian = ttk.Entry(cust_card)
         self.ent_cust_guardian.pack(fill="x", pady=(3, 10))
 
@@ -197,30 +204,37 @@ class NewEntryView(tk.Frame):
 
         col_p = tk.Frame(row_pa, bg=THEME["bg_card"])
         col_p.grid(row=0, column=0, sticky="ew", padx=(0, 6))
-        tk.Label(col_p, text="Contact Phone Number", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
+        tk.Label(col_p, text="Contact Phone Number", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
         self.ent_cust_phone = ttk.Entry(col_p)
         self.ent_cust_phone.pack(fill="x", pady=(3, 0))
 
         col_a = tk.Frame(row_pa, bg=THEME["bg_card"])
         col_a.grid(row=0, column=1, sticky="ew", padx=(6, 0))
-        tk.Label(col_a, text="Aadhaar / ID Card No", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
+        tk.Label(col_a, text="Aadhaar / ID Card No", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
         self.ent_cust_aadhar = ttk.Entry(col_a)
         self.ent_cust_aadhar.pack(fill="x", pady=(3, 0))
 
         # Address (NO DEFAULT)
-        tk.Label(cust_card, text="Residential Address", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
-        self.txt_cust_address = tk.Text(cust_card, height=3, font=("Segoe UI", 10), relief="solid", borderwidth=1)
+        tk.Label(cust_card, text="Residential Address", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(anchor="w")
+        self.txt_cust_address = tk.Text(cust_card, height=4, font=("Segoe UI", 11), relief="solid", borderwidth=1)
         self.txt_cust_address.pack(fill="x", pady=(3, 12))
 
         # Photos row: Customer Photo & ID Proof Photo
         photo_row = tk.Frame(cust_card, bg=THEME["bg_card"])
         photo_row.pack(fill="x")
+        photo_row.grid_columnconfigure(0, weight=1)
+        photo_row.grid_columnconfigure(1, weight=1)
 
-        self.picker_cust_photo = PhotoPicker(photo_row, label="Customer Portrait Photo", category="customer", preview_size=(120, 130))
-        self.picker_cust_photo.pack(side="left", padx=(0, 20))
+        self.picker_cust_photo = PhotoPicker(photo_row, label="Customer Portrait Photo", category="customer", preview_size=(165, 180))
+        self.picker_cust_photo.grid(row=0, column=0, sticky="nw", padx=(0, 12))
 
-        self.picker_id_proof = PhotoPicker(photo_row, label="ID Proof Document (Aadhaar/Voter)", category="id_proof", preview_size=(120, 130))
-        self.picker_id_proof.pack(side="left")
+        self.picker_id_proof = MultiProofPicker(
+            photo_row,
+            label="ID Proof Photos (Aadhaar front/back, PAN, etc.)",
+            card_size=(150, 165)
+        )
+        self.picker_id_proof.grid(row=0, column=1, sticky="nsew")
+        photo_row.bind("<Configure>", self._on_photo_row_resize)
 
         # Status indicator if customer exists
         self.lbl_cust_status = tk.Label(cust_card, text="ℹ Status: Clean Entry", font=("Segoe UI", 9, "italic"), bg=THEME["bg_card"], fg=THEME["info"])
@@ -238,24 +252,27 @@ class NewEntryView(tk.Frame):
             relief="solid",
             borderwidth=1
         )
+        self.jewel_card = jewel_card
         jewel_card.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
 
         # Jewel Metal Type Selector (Gold / Silver) - NO FORCED DEFAULT
         type_frame = tk.Frame(jewel_card, bg=THEME["bg_card"])
         type_frame.pack(fill="x", pady=(0, 10))
 
-        tk.Label(type_frame, text="Jewel Metal Type: *", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(0, 14))
+        tk.Label(type_frame, text="Jewel Metal Type: *", font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"]).pack(side="left", padx=(0, 14))
         self.jewel_type_var = tk.StringVar(value="")
 
         rb_gold = tk.Radiobutton(
             type_frame, text="🪙 Gold (G)", variable=self.jewel_type_var, value="G",
-            font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg="#b45309", selectcolor=THEME["bg_card"]
+            font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], fg="#b45309", selectcolor=THEME["bg_card"],
+            command=lambda: self._set_default_interest_rate("G")
         )
         rb_gold.pack(side="left", padx=(0, 18))
 
         rb_silver = tk.Radiobutton(
             type_frame, text="🥈 Silver (S)", variable=self.jewel_type_var, value="S",
-            font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg="#475569", selectcolor=THEME["bg_card"]
+            font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], fg="#475569", selectcolor=THEME["bg_card"],
+            command=lambda: self._set_default_interest_rate("S")
         )
         rb_silver.pack(side="left")
 
@@ -335,6 +352,8 @@ class NewEntryView(tk.Frame):
         self.ent_rate = ttk.Entry(col_i, font=("Segoe UI", 11, "bold"))
         self.ent_rate.pack(fill="x", pady=(3, 0))
         self.ent_rate.bind("<KeyRelease>", lambda e: self._calculate_interest())
+        self._last_default_rate = self._configured_rate("G")
+        self.ent_rate.insert(0, self._last_default_rate)
 
         # Live calculation breakdown bar
         self.lbl_interest_summary = tk.Label(
@@ -347,7 +366,7 @@ class NewEntryView(tk.Frame):
         self.lbl_interest_summary.pack(anchor="w", pady=(10, 0))
 
         # Optional Jewel Photo Picker
-        self.picker_jewel = PhotoPicker(jewel_card, label="Jewelry Snapshot Photo (Optional)", category="jewel", preview_size=(120, 95))
+        self.picker_jewel = PhotoPicker(jewel_card, label="Jewelry Snapshot Photo (Optional)", category="jewel", preview_size=(165, 135))
         self.picker_jewel.pack(anchor="w")
 
         # -------------------------------------------------------------
@@ -368,6 +387,7 @@ class NewEntryView(tk.Frame):
         # -------------------------------------------------------------
         action_bar = tk.Frame(self.scrollable_content, bg=THEME["bg_main"], pady=10)
         action_bar.pack(fill="x", padx=10, pady=(0, 40))
+        action_bar.bind("<Configure>", self._on_action_bar_resize)
 
         self.btn_save_print = tk.Button(
             action_bar,
@@ -383,7 +403,7 @@ class NewEntryView(tk.Frame):
             cursor="hand2",
             command=lambda: self._on_save(generate_pdf=True)
         )
-        self.btn_save_print.pack(side="left", padx=(0, 16))
+        self.btn_save_print.grid(row=0, column=0, sticky="ew", padx=(0, 8), pady=3)
 
         self.btn_save_only = tk.Button(
             action_bar,
@@ -399,7 +419,7 @@ class NewEntryView(tk.Frame):
             cursor="hand2",
             command=lambda: self._on_save(generate_pdf=False)
         )
-        self.btn_save_only.pack(side="left", padx=(0, 16))
+        self.btn_save_only.grid(row=0, column=1, sticky="ew", padx=8, pady=3)
 
         self.btn_reset = tk.Button(
             action_bar,
@@ -414,7 +434,60 @@ class NewEntryView(tk.Frame):
             cursor="hand2",
             command=self.clear_form
         )
-        self.btn_reset.pack(side="left")
+        self.btn_reset.grid(row=0, column=2, sticky="ew", padx=(8, 0), pady=3)
+        for column in range(3):
+            action_bar.grid_columnconfigure(column, weight=1)
+
+    def _on_form_resize(self, event):
+        if event.width < 1080:
+            event.widget.grid_columnconfigure(1, weight=0)
+            self.customer_card.grid_configure(row=0, column=0, columnspan=1, padx=0)
+            self.jewel_card.grid_configure(row=1, column=0, columnspan=1, padx=0, pady=(12, 0))
+        else:
+            event.widget.grid_columnconfigure(1, weight=1)
+            self.customer_card.grid_configure(row=0, column=0, columnspan=1, padx=(0, 8), pady=0)
+            self.jewel_card.grid_configure(row=0, column=1, columnspan=1, padx=(8, 0), pady=0)
+
+    def _on_photo_row_resize(self, event):
+        if event.width < 760:
+            self.picker_cust_photo.grid_configure(row=0, column=0, columnspan=2, pady=(0, 12))
+            self.picker_id_proof.grid_configure(row=1, column=0, columnspan=2)
+        else:
+            self.picker_cust_photo.grid_configure(row=0, column=0, columnspan=1, pady=0)
+            self.picker_id_proof.grid_configure(row=0, column=1, columnspan=1)
+
+    def _on_action_bar_resize(self, event):
+        if event.width < 820:
+            for column in range(3):
+                event.widget.grid_columnconfigure(column, weight=1 if column == 0 else 0)
+            for row, button in enumerate((self.btn_save_print, self.btn_save_only, self.btn_reset)):
+                button.grid_configure(row=row, column=0, padx=0, pady=4)
+            self.scrollable_content.after_idle(lambda: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        else:
+            for column in range(3):
+                event.widget.grid_columnconfigure(column, weight=1)
+            self.btn_save_print.grid_configure(row=0, column=0, padx=(0, 8), pady=3)
+            self.btn_save_only.grid_configure(row=0, column=1, padx=8, pady=3)
+            self.btn_reset.grid_configure(row=0, column=2, padx=(8, 0), pady=3)
+
+    def _configured_rate(self, metal_type):
+        setting_key = "silver_rate_pct" if metal_type == "S" else "gold_rate_pct"
+        default_rate = InterestService.get_default_rate(metal_type)
+        return SettingsDAO.get(setting_key, str(default_rate)) or str(default_rate)
+
+    def _set_default_interest_rate(self, metal_type, force=False):
+        current_rate = self.ent_rate.get().strip()
+        try:
+            is_previous_default = not current_rate or float(current_rate) == float(self._last_default_rate)
+        except ValueError:
+            is_previous_default = False
+
+        new_rate = self._configured_rate(metal_type)
+        if force or is_previous_default:
+            self.ent_rate.delete(0, "end")
+            self.ent_rate.insert(0, new_rate)
+            self._calculate_interest()
+        self._last_default_rate = new_rate
 
     # -------------------------------------------------------------
     # HELPER LOGIC & EVENT HANDLERS
@@ -495,7 +568,7 @@ class NewEntryView(tk.Frame):
 
         # Set photos
         self.picker_cust_photo.set_existing_image(cust.get("photo_path"))
-        self.picker_id_proof.set_existing_image(cust.get("id_proof_path"))
+        self.picker_id_proof.set_proof_paths(CustomerDAO.get_proof_photos(cust))
 
         # Load existing connections for this customer
         existing_conns = ConnectionDAO.get_for_customer(cust["id"])
@@ -578,7 +651,7 @@ class NewEntryView(tk.Frame):
 
         # 2. Persist Customer
         cust_photo_path = self.picker_cust_photo.get_saved_image_path()
-        id_proof_path = self.picker_id_proof.get_saved_image_path()
+        id_proof_path = CustomerDAO.encode_proof_photos(self.picker_id_proof.get_proof_paths())
         guardian = self.ent_cust_guardian.get().strip()
         phone = self.ent_cust_phone.get().strip()
         aadhar = self.ent_cust_aadhar.get().strip()
@@ -590,7 +663,7 @@ class NewEntryView(tk.Frame):
                 self.selected_customer_id,
                 cust_name, guardian, address, phone, aadhar,
                 photo_path=cust_photo_path if cust_photo_path else None,
-                id_proof_path=id_proof_path if id_proof_path else None
+                id_proof_path=id_proof_path
             )
             cust_id = self.selected_customer_id
         else:
@@ -679,7 +752,9 @@ class NewEntryView(tk.Frame):
         self.cmb_hallmark.set("")
         self.ent_remarks.delete(0, "end")
         self.ent_principal.delete(0, "end")
+        self._last_default_rate = self._configured_rate("G")
         self.ent_rate.delete(0, "end")
+        self.ent_rate.insert(0, self._last_default_rate)
         self.picker_jewel.clear_image()
         self.lbl_interest_summary.config(text="Enter Principal and Interest Rate % to view calculation breakdown.")
 

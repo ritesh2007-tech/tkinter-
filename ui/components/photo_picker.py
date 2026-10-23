@@ -13,7 +13,7 @@ from config import THEME
 from services.image_service import ImageService
 
 class PhotoPicker(tk.Frame):
-    def __init__(self, parent, label="Photo", category="customer", preview_size=(120, 130), on_change_callback=None, **kwargs):
+    def __init__(self, parent, label="Photo", category="customer", preview_size=(150, 165), on_change_callback=None, **kwargs):
         super().__init__(parent, bg=THEME["bg_card"], **kwargs)
         self.label_text = label
         self.category = category
@@ -26,7 +26,7 @@ class PhotoPicker(tk.Frame):
 
     def _build_ui(self):
         # Header Label
-        lbl = tk.Label(self, text=self.label_text, font=("Segoe UI", 10, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"])
+        lbl = tk.Label(self, text=self.label_text, font=("Segoe UI", 12, "bold"), bg=THEME["bg_card"], fg=THEME["text_dark"], wraplength=320, justify="left")
         lbl.pack(anchor="w", pady=(0, 6))
 
         # Photo Container Frame with explicit pixel size
@@ -51,7 +51,7 @@ class PhotoPicker(tk.Frame):
         self.btn_browse = tk.Button(
             btn_frame,
             text="📁 Browse",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg="#e2e8f0",
             fg=THEME["text_dark"],
             activebackground="#cbd5e1",
@@ -66,7 +66,7 @@ class PhotoPicker(tk.Frame):
         self.btn_cam = tk.Button(
             btn_frame,
             text="📷 Camera",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg="#e2e8f0",
             fg=THEME["text_dark"],
             activebackground="#cbd5e1",
@@ -81,7 +81,7 @@ class PhotoPicker(tk.Frame):
         self.btn_clear = tk.Button(
             btn_frame,
             text="✕ Clear",
-            font=("Segoe UI", 9, "bold"),
+            font=("Segoe UI", 10, "bold"),
             bg="#fee2e2",
             fg=THEME["danger"],
             activebackground="#fecaca",

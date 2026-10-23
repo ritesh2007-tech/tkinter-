@@ -75,7 +75,7 @@ class JewelryMortgageApp(tk.Tk):
 
         lbl_logo = tk.Label(
             brand_frame,
-            text="👑 SWARNA RATNA",
+            text="👑Jewellery ",
             font=("Segoe UI", 13, "bold"),
             bg=THEME["bg_sidebar"],
             fg=THEME["primary"]
@@ -84,7 +84,7 @@ class JewelryMortgageApp(tk.Tk):
 
         lbl_sub = tk.Label(
             brand_frame,
-            text="Jewel Mortgage Bankers",
+            text="Mortgage Bankers",
             font=("Segoe UI", 8),
             bg=THEME["bg_sidebar"],
             fg="#94a3b8"

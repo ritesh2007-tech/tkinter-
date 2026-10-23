@@ -2,7 +2,7 @@
 Settings, Security, Backup & Audit Trail View.
 Manages:
 - Shop Profile & License details (printed on receipts and pledges)
-- Interest rates defaults (Gold 2%, Silver 3%)
+- Interest rates defaults (Gold 7%, Silver 7%)
 - Admin PIN for security operations
 - Complete Backup and Restore operations (DB + Photos)
 - System Audit Logs
@@ -229,10 +229,10 @@ class SettingsView(tk.Frame):
         self.ent_shop_gstin.insert(0, settings.get("shop_gstin", ""))
 
         self.ent_gold_rate.delete(0, "end")
-        self.ent_gold_rate.insert(0, settings.get("gold_rate_pct", "2.0"))
+        self.ent_gold_rate.insert(0, settings.get("gold_rate_pct", "7.0"))
 
         self.ent_silver_rate.delete(0, "end")
-        self.ent_silver_rate.insert(0, settings.get("silver_rate_pct", "3.0"))
+        self.ent_silver_rate.insert(0, settings.get("silver_rate_pct", "7.0"))
 
         self.cmb_active_series.set(settings.get("current_serial_letter", "A"))
 

@@ -1,8 +1,17 @@
 """
 Data Access Layer (DAO) for Customers, Connections, Pledges, Settings, and Audit Logs.
 """
+import json
 import math
+import os
+import sys
 from datetime import datetime
+
+if __package__ in (None, ""):
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
 from database.db import get_connection
 
 class SettingsDAO:
@@ -83,6 +92,36 @@ class CustomerDAO:
             return dict(row) if row else None
         finally:
             conn.close()
+
+    @staticmethod
+    def get_proof_photos(cust_or_raw):
+        """Extracts list of proof photo paths from customer record or raw string."""
+        if not cust_or_raw:
+            return []
+        if hasattr(cust_or_raw, "keys") and "id_proof_path" in cust_or_raw.keys():
+            raw = cust_or_raw["id_proof_path"]
+        else:
+            raw = cust_or_raw
+        if not raw:
+            return []
+        if isinstance(raw, (list, tuple)):
+            paths = raw
+        else:
+            raw = str(raw).strip()
+            if raw.startswith("[") and raw.endswith("]"):
+                try:
+                    paths = json.loads(raw)
+                except json.JSONDecodeError:
+                    paths = [raw]
+            else:
+                paths = [raw]
+        return [path for path in paths if isinstance(path, str) and path and os.path.exists(path)]
+
+    @staticmethod
+    def encode_proof_photos(photo_list):
+        """Encodes list of proof photo paths into persistent string for database."""
+        clean = [path for path in photo_list if isinstance(path, str) and path]
+        return json.dumps(clean)
 
     @staticmethod
     def search(query, limit=10):

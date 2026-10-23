@@ -17,6 +17,7 @@ from services.image_service import ImageService
 from services.report_service import ReportService
 from ui.components.connection_tree import ConnectionTreeWidget
 from ui.components.photo_picker import PhotoPicker
+from ui.components.multi_proof_picker import MultiProofPicker
 from ui.components.toast import Toast
 
 JEWELRY_ITEM_TYPES = [
@@ -227,16 +228,6 @@ class SearchView(tk.Frame):
         lbl_ci.image = c_img
         lbl_ci.pack()
 
-        # ID Proof Photo
-        id_box = tk.Frame(gallery_frame, bg="#f8fafc")
-        id_box.pack(side="left", padx=5)
-        tk.Label(id_box, text="ID Proof", font=("Segoe UI", 8, "bold"), bg="#f8fafc", fg=THEME["text_muted"]).pack()
-        id_thumb = ImageService.get_thumbnail_path(record.get("id_proof_path"))
-        id_img = ImageService.load_tk_image(id_thumb, size=(75, 85), placeholder_text="🪪")
-        lbl_idi = tk.Label(id_box, image=id_img, bg="#ffffff", highlightthickness=1, highlightbackground="#cbd5e1")
-        lbl_idi.image = id_img
-        lbl_idi.pack()
-
         # Jewel Photo
         j_box = tk.Frame(gallery_frame, bg="#f8fafc")
         j_box.pack(side="left", padx=5)
@@ -246,6 +237,15 @@ class SearchView(tk.Frame):
         lbl_ji = tk.Label(j_box, image=j_img, bg="#ffffff", highlightthickness=1, highlightbackground="#cbd5e1")
         lbl_ji.image = j_img
         lbl_ji.pack()
+
+        proof_gallery = MultiProofPicker(
+            content,
+            label="Customer Identity Proof Photos",
+            card_size=(100, 110),
+            editable=False
+        )
+        proof_gallery.pack(fill="x", pady=(0, 10))
+        proof_gallery.set_proof_paths(CustomerDAO.get_proof_photos(record))
 
         # Customer Info Section
         cust_info_box = tk.LabelFrame(content, text=" Customer Information ", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], padx=10, pady=6)
@@ -267,7 +267,7 @@ class SearchView(tk.Frame):
         jewel_info_box = tk.LabelFrame(content, text=" Jewelry & Mortgage Terms ", font=("Segoe UI", 9, "bold"), bg=THEME["bg_card"], padx=10, pady=6)
         jewel_info_box.pack(fill="x", pady=(0, 10))
 
-        jtype = "Gold (G) [2%/g]" if record.get("jewel_type") == "G" else "Silver (S) [3%/g]"
+        jtype = "Gold (G)" if record.get("jewel_type") == "G" else "Silver (S)"
         add_info_row(jewel_info_box, "Jewel Item", record.get("jewel_name"))
         add_info_row(jewel_info_box, "Metal Type", jtype)
         add_info_row(jewel_info_box, "Weights", f"Gross: {record.get('gross_weight')}g  |  Net: {record.get('net_weight')}g")
@@ -522,9 +522,13 @@ class SearchView(tk.Frame):
         p_cust.pack(side="left", padx=(0, 15))
         p_cust.set_existing_image(record.get("customer_photo_path"))
 
-        p_id = PhotoPicker(photo_row, label="ID Proof Photo", category="id_proof", preview_size=(90, 100))
-        p_id.pack(side="left")
-        p_id.set_existing_image(record.get("id_proof_path"))
+        p_id = MultiProofPicker(
+            photo_row,
+            label="ID Proof Photos",
+            card_size=(120, 130)
+        )
+        p_id.pack(side="left", fill="x", expand=True)
+        p_id.set_proof_paths(CustomerDAO.get_proof_photos(record))
 
         # 2. Jewel Details Section
         j_frame = tk.LabelFrame(content, text=" Jewelry Details Updation ", font=("Segoe UI", 11, "bold"), bg=THEME["bg_card"], padx=16, pady=12)
@@ -632,7 +636,7 @@ class SearchView(tk.Frame):
 
             # Update customer
             c_photo = p_cust.get_saved_image_path()
-            id_photo = p_id.get_saved_image_path()
+            id_photo = CustomerDAO.encode_proof_photos(p_id.get_proof_paths())
             CustomerDAO.update(
                 record["customer_id"],
                 cname,
@@ -641,7 +645,7 @@ class SearchView(tk.Frame):
                 e_cphone.get().strip(),
                 e_caadhar.get().strip(),
                 photo_path=c_photo if c_photo else None,
-                id_proof_path=id_photo if id_photo else None
+                id_proof_path=id_photo
             )
 
             # Update pledge

@@ -5,12 +5,13 @@ and redemption settlement calculation without forcing rigid defaults.
 """
 from datetime import datetime, date
 import math
+from config import DEFAULT_GOLD_RATE_PCT, DEFAULT_SILVER_RATE_PCT
 
 class InterestService:
     @staticmethod
     def get_default_rate(jewel_type=None):
-        """Returns empty string so no default rate is forced."""
-        return ""
+        """Returns the configured monthly default for the selected metal."""
+        return DEFAULT_SILVER_RATE_PCT if jewel_type == "S" else DEFAULT_GOLD_RATE_PCT
 
     @staticmethod
     def calculate_monthly_interest(principal, rate_pct, net_weight=0, jewel_type=""):

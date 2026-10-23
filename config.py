@@ -43,11 +43,9 @@ DEFAULT_SHOP_PHONE = "+91 98765 43210 / 044-24567890"
 DEFAULT_SHOP_LICENSE = "PAWN/LIC/2026/G-8872"
 DEFAULT_SHOP_GSTIN = "33AAAAA0000A1Z5"
 
-# Interest Configuration (Per specifications: Gold 2%, Silver 3%)
-# Gold: 2.0% per month or based on per gram calculation
-# Silver: 3.0% per month or based on per gram calculation
-DEFAULT_GOLD_RATE_PCT = 2.0  # 2% interest per month / per gram reference
-DEFAULT_SILVER_RATE_PCT = 3.0  # 3% interest per month / per gram reference
+# Interest Configuration (Per user request: 7% for both gold and silver)
+DEFAULT_GOLD_RATE_PCT = 7.0  # 7% interest per month for gold
+DEFAULT_SILVER_RATE_PCT = 7.0  # 7% interest per month for silver
 
 # Serial System Configuration
 # Serial letter: A to Z

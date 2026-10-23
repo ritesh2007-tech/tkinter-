@@ -4,6 +4,13 @@ Uses SQLite with WAL mode, foreign keys, and indexes for high scalability and of
 """
 import sqlite3
 import os
+import sys
+
+if __package__ in (None, ""):
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
 from config import DB_PATH, DEFAULT_ADMIN_PIN, DEFAULT_GOLD_RATE_PCT, DEFAULT_SILVER_RATE_PCT
 
 def get_connection():
@@ -131,6 +138,18 @@ def init_db():
 
     for key, val in defaults.items():
         cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?);", (key, val))
+
+    saved_rates = dict(cursor.execute(
+        "SELECT key, value FROM settings WHERE key IN ('gold_rate_pct', 'silver_rate_pct');"
+    ).fetchall())
+    if saved_rates == {"gold_rate_pct": "2.0", "silver_rate_pct": "3.0"}:
+        cursor.executemany(
+            "UPDATE settings SET value = ? WHERE key = ?;",
+            [
+                (str(DEFAULT_GOLD_RATE_PCT), "gold_rate_pct"),
+                (str(DEFAULT_SILVER_RATE_PCT), "silver_rate_pct"),
+            ]
+        )
 
     conn.commit()
     conn.close()

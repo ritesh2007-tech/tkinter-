@@ -11,6 +11,7 @@ from database.models import CustomerDAO, PledgeDAO, ConnectionDAO
 from services.image_service import ImageService
 from ui.components.connection_tree import ConnectionTreeWidget
 from ui.components.photo_picker import PhotoPicker
+from ui.components.multi_proof_picker import MultiProofPicker
 from ui.components.toast import Toast
 
 class CustomersView(tk.Frame):
@@ -134,7 +135,8 @@ class CustomersView(tk.Frame):
         content = tk.Frame(canvas, bg=THEME["bg_card"], padx=16, pady=12)
 
         content.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=content, anchor="nw", width=590)
+        content_window = canvas.create_window((0, 0), window=content, anchor="nw")
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(content_window, width=e.width))
         canvas.configure(yscrollcommand=scroll.set)
 
         canvas.pack(side="left", fill="both", expand=True)
@@ -146,26 +148,29 @@ class CustomersView(tk.Frame):
 
         # Photos
         c_thumb = ImageService.get_thumbnail_path(cust.get("photo_path"))
-        c_img = ImageService.load_tk_image(c_thumb, size=(75, 85), placeholder_text="👤")
+        c_img = ImageService.load_tk_image(c_thumb, size=(105, 120), placeholder_text="👤")
         lbl_c_img = tk.Label(p_row, image=c_img, bg="#ffffff", highlightthickness=1, highlightbackground=THEME["border"])
         lbl_c_img.image = c_img
         lbl_c_img.pack(side="left", padx=(0, 10))
-
-        id_thumb = ImageService.get_thumbnail_path(cust.get("id_proof_path"))
-        id_img = ImageService.load_tk_image(id_thumb, size=(75, 85), placeholder_text="🪪")
-        lbl_id_img = tk.Label(p_row, image=id_img, bg="#ffffff", highlightthickness=1, highlightbackground=THEME["border"])
-        lbl_id_img.image = id_img
-        lbl_id_img.pack(side="left", padx=(0, 15))
 
         # Text Details
         txt_box = tk.Frame(p_row, bg="#f8fafc")
         txt_box.pack(side="left", fill="both", expand=True)
 
-        tk.Label(txt_box, text=cust["name"], font=("Segoe UI", 12, "bold"), bg="#f8fafc", fg=THEME["text_dark"]).pack(anchor="w")
-        tk.Label(txt_box, text=f"Father / Spouse: {cust.get('father_guardian') or 'N/A'}", font=("Segoe UI", 8), bg="#f8fafc", fg=THEME["text_muted"]).pack(anchor="w")
-        tk.Label(txt_box, text=f"📞 Phone: {cust.get('phone') or 'N/A'}", font=("Segoe UI", 8), bg="#f8fafc", fg=THEME["text_dark"]).pack(anchor="w")
-        tk.Label(txt_box, text=f"🪪 Aadhaar: {cust.get('aadhar') or 'N/A'}", font=("Segoe UI", 8, "bold"), bg="#f8fafc", fg=THEME["accent"]).pack(anchor="w")
-        tk.Label(txt_box, text=f"📍 Address: {cust.get('address') or 'N/A'}", font=("Segoe UI", 8), bg="#f8fafc", fg=THEME["text_muted"]).pack(anchor="w")
+        tk.Label(txt_box, text=cust["name"], font=("Segoe UI", 15, "bold"), bg="#f8fafc", fg=THEME["text_dark"], wraplength=360, justify="left").pack(anchor="w")
+        tk.Label(txt_box, text=f"Father / Spouse: {cust.get('father_guardian') or 'N/A'}", font=("Segoe UI", 10), bg="#f8fafc", fg=THEME["text_muted"], wraplength=360, justify="left").pack(anchor="w")
+        tk.Label(txt_box, text=f"📞 Phone: {cust.get('phone') or 'N/A'}", font=("Segoe UI", 10), bg="#f8fafc", fg=THEME["text_dark"], wraplength=360, justify="left").pack(anchor="w")
+        tk.Label(txt_box, text=f"🪪 Aadhaar: {cust.get('aadhar') or 'N/A'}", font=("Segoe UI", 10, "bold"), bg="#f8fafc", fg=THEME["accent"], wraplength=360, justify="left").pack(anchor="w")
+        tk.Label(txt_box, text=f"📍 Address: {cust.get('address') or 'N/A'}", font=("Segoe UI", 10), bg="#f8fafc", fg=THEME["text_muted"], wraplength=360, justify="left").pack(anchor="w")
+
+        proof_gallery = MultiProofPicker(
+            content,
+            label="Identity Proof Photos",
+            card_size=(105, 115),
+            editable=False
+        )
+        proof_gallery.pack(fill="x", pady=(0, 12))
+        proof_gallery.set_proof_paths(CustomerDAO.get_proof_photos(cust))
 
         # Verified Relatives Connection Tree
         c_tree_box = tk.LabelFrame(

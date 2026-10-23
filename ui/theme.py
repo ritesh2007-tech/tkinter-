@@ -21,13 +21,13 @@ def apply_theme(root):
 
     # Responsive, Bigger Fonts
     font_family = "Segoe UI" if "Segoe UI" in tkfont.families() else "Helvetica"
-    font_title = (font_family, 16, "bold")
-    font_subtitle = (font_family, 13, "bold")
-    font_body = (font_family, 11)
-    font_bold = (font_family, 11, "bold")
-    font_small = (font_family, 10)
-    font_large_num = (font_family, 24, "bold")
-    font_btn = (font_family, 11, "bold")
+    font_title = (font_family, 18, "bold")
+    font_subtitle = (font_family, 14, "bold")
+    font_body = (font_family, 12)
+    font_bold = (font_family, 12, "bold")
+    font_small = (font_family, 11)
+    font_large_num = (font_family, 28, "bold")
+    font_btn = (font_family, 12, "bold")
 
     # Frame styles
     style.configure("Main.TFrame", background=THEME["bg_main"])
