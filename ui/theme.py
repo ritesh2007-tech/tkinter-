@@ -62,7 +62,7 @@ def apply_theme(root):
     # 1. Primary Button (Warm Amber Gold)
     style.configure("Primary.TButton",
                     background=THEME["primary"],
-                    foreground="#ffffff",
+                    foreground="#a75f5f",
                     font=font_btn,
                     padding=(16, 10),
                     borderwidth=0,
