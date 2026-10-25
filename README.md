@@ -2,7 +2,7 @@ Modern Jewelry Mortgage & Pledge System (Python Tkinter & SQLite)
 
 An enterprise-grade, offline-first desktop application engineered specifically for **Jewelry Mortgage / Pawn Broking Bankers**. Built with Python, Tkinter (Modern Flat TTK styling), SQLite (WAL mode with performance indexing), Pillow (dynamic image optimization and compression), and ReportLab (PDF vouchers and registers).
 
----
+----
 
 ## 🌟 Key Features
 
