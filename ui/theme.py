@@ -73,7 +73,7 @@ def apply_theme(root):
 
     # 2. Secondary Button
     style.configure("Secondary.TButton",
-                    background="#e2e8f0",
+                    background="#cfd5de",
                     foreground=THEME["text_dark"],
                     font=font_btn,
                     padding=(14, 8),
