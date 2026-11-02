@@ -99,7 +99,7 @@ def apply_theme(root):
                     padding=(14, 8),
                     borderwidth=0)
     style.map("Danger.TButton",
-              background=[("active", "#b91c1c")])
+              background=[("active", "#a72525")])
 
     # 5. Sidebar Navigation Button (Generous click targets)
     style.configure("Nav.TButton",
